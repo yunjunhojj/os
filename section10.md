@@ -41,3 +41,134 @@
 - 힙: 동적 메모리 할당을 위한 공간.
 - 스택: 함수 호출, 지역 변수 등이 저장된 공간.
 - 사용자 영역에서 실행되는 프로그램은 직접 하드웨어 자원에 접근할 수 없으며, 시스템 호출을 통해 커널의 서비스를 요청해야 합니다.
+
+# 스레드 (Thread)
+
+스레드는 프로세스 내에서 실행되는 가장 작은 실행 단위입니다. 스레드는 프로세스의 리소스를 공유하면서 동시에 실행될 수 있는 경량 프로세스로 간주됩니다. 스레드는 독립적으로 실행되는 작업 흐름을 제공하며, 멀티스레딩을 통해 하나의 프로세스 내에서 여러 작업을 병렬로 수행할 수 있습니다.
+
+## 스레드의 특징
+
+- 공유 메모리: 같은 프로세스 내의 스레드는 메모리 공간(코드, 데이터 섹션, 힙)을 공유합니다.
+
+- 독립된 실행 흐름: 각 스레드는 독립적인 실행 흐름을 가지며, 각자의 프로그램 카운터, 레지스터, 스택을 가집니다.
+
+- 경량 프로세스: 스레드는 프로세스보다 적은 자원을 사용하며, 생성과 전환이 빠릅니다.
+
+- 병렬 처리: 여러 스레드가 동시에 실행됨으로써 작업을 병렬로 처리할 수 있습니다.
+
+## 스레드의 장점
+
+- 자원 효율성: 스레드는 동일한 프로세스 내에서 자원을 공유하기 때문에 메모리와 시스템 자원의 사용이 효율적입니다.
+
+- 빠른 컨텍스트 전환: 스레드 간의 문맥 교환은 프로세스 간의 문맥 교환보다 빠릅니다.
+
+- 향상된 응답성: GUI 애플리케이션에서 백그라운드 작업을 스레드로 처리하여 응답성을 향상시킬 수 있습니다.
+
+- 병렬 처리: 멀티코어 시스템에서 스레드를 이용하여 병렬 처리를 구현할 수 있습니다.
+
+## 스레드의 단점
+
+- 동기화 문제: 스레드가 메모리를 공유하기 때문에, 동기화 문제(예: 경쟁 상태, 데드락)가 발생할 수 있습니다.
+
+- 디버깅 어려움: 스레드 간의 상호작용으로 인해 디버깅이 어려울 수 있습니다.
+
+- 복잡성 증가: 멀티스레드 프로그램은 단일 스레드 프로그램보다 설계와 구현이 복잡합니다.
+
+## 스레드의 종류
+
+- 커널 수준 스레드 (Kernel-Level Threads): 운영 체제 커널에 의해 관리되며, 커널이 스레드 스케줄링과 관리를 담당합니다. 예: POSIX 스레드(pthread) 라이브러리.
+
+- 사용자 수준 스레드 (User-Level Threads): 사용자 라이브러리에서 관리되며, 커널이 아닌 사용자 공간에서 스레드 스케줄링을 수행합니다. 예: Java의 그린 스레드(Green Threads).
+
+## 스레드 생성 및 관리
+
+스레드는 다양한 프로그래밍 언어와 라이브러리에서 지원됩니다. 예를 들어, C에서는 POSIX 스레드 라이브러리를 사용하여 스레드를 생성하고 관리할 수 있습니다. Java에서는 Thread 클래스와 Runnable 인터페이스를 사용하여 스레드를 생성하고 관리합니다.
+
+예제: POSIX 스레드를 이용한 스레드 생성 (C)
+c
+
+```java
+#include <pthread.h>
+#include <stdio.h>
+
+void* thread_function(void* arg) {
+printf("Hello from thread!\n");
+return NULL;
+}
+
+int main() {
+pthread_t thread;
+pthread_create(&thread, NULL, thread_function, NULL);
+pthread_join(thread, NULL);
+return 0;
+}
+```
+
+예제: Java에서 스레드 생성
+java
+
+```java
+public class MyThread extends Thread {
+public void run() {
+System.out.println("Hello from thread!");
+}
+
+    public static void main(String[] args) {
+        MyThread thread = new MyThread();
+        thread.start();
+    }
+
+}
+```
+
+## 스레드 동기화
+
+스레드 간의 동기화를 위해 뮤텍스, 세마포어, 모니터 등의 동기화 도구를 사용합니다. 동기화는 데이터 일관성을 유지하고 경쟁 상태를 방지하기 위해 필요합니다.
+
+예제: Java에서 동기화 블록 사용
+java
+
+코드 복사
+
+```java
+public class Counter {
+private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public static void main(String[] args) {
+        Counter counter = new Counter();
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Final count: " + counter.getCount());
+    }
+
+}
+```
